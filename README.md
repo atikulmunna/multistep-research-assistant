@@ -304,17 +304,7 @@ curl http://127.0.0.1:8000/api/v1/reports?limit=20
 curl http://127.0.0.1:8000/api/v1/benchmarks/history?limit=10
 ```
 
-## Dashboard Features
-
-- Start/cancel session with live status
-- Stage timeline with animated progress
-- Stage details: current stage, sub-questions, iteration count
-- Report viewer with rendered/raw tabs
-- Latest source mode: `all`, `file`, `session`
-- Export shortcuts: HTML, MD, PDF (print flow)
-- Benchmark history + latest comparison panel
-
-## Quality, Safety, and Reliability
+## Features
 
 - URL deduplication in retrieval
 - Citation normalization + placeholder rejection
@@ -350,17 +340,6 @@ CI jobs:
 2. Run secret hygiene scan (`python scripts/scan_secrets.py`)
 3. Run tests (`pytest -q`)
 4. Run benchmark smoke (`research-assistant benchmark --num-queries 1 --json --reset-first`)
-
-## Security and Key Hygiene
-
-- `.env` is git-ignored
-- Never commit API keys
-- Rotate keys exposed in terminal/chat/history
-- Optional local pre-commit check:
-
-```bash
-python scripts/scan_secrets.py
-```
 
 ## Known Constraints
 
