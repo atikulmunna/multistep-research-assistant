@@ -264,6 +264,25 @@ Start server:
 uvicorn research_assistant.api:app --host 127.0.0.1 --port 8000
 ```
 
+### Dashboard Setup
+
+1. Ensure dependencies are installed and `.env` is configured.
+2. Start the API server:
+
+```bash
+uvicorn research_assistant.api:app --host 127.0.0.1 --port 8000
+```
+
+3. Open the dashboard:
+
+- `http://127.0.0.1:8000/dashboard`
+
+4. Run a full flow:
+- Enter query -> click `Start Research`
+- Wait for stage timeline to complete
+- Open latest report (`Rendered`/`Raw` tabs)
+- Export report as HTML/MD/PDF from dashboard or CLI
+
 Dashboard:
 
 - `http://127.0.0.1:8000/dashboard`
@@ -348,7 +367,3 @@ python scripts/scan_secrets.py
 - If using free/shared API models, expect occasional rate limits (`429`)
 - `mock://` links are valid references for local mock mode, but not web-browsable
 - Dashboard export-to-PDF uses browser print flow; CLI supports direct `--to pdf`
-
-## License
-
-Add your preferred license file before open-source release.
