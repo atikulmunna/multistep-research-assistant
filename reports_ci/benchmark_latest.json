@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "queries_run": 1,
+    "successes": 0,
+    "failures": 1,
+    "quality_gate_failures": 1,
+    "budget_failures": 0,
+    "adaptive_attempts": 1,
+    "adaptive_applied": 1,
+    "avg_latency_s": 0.005,
+    "max_latency_s": 0.005,
+    "avg_report_chars": 2311,
+    "avg_reference_count": 3.0,
+    "total_llm_calls": 0,
+    "total_tokens": 0,
+    "total_cost_usd": 0
+  },
+  "runs": [
+    {
+      "query": "Impact of AI on education",
+      "duration_s": 0.005,
+      "report_chars": 2311,
+      "reference_count": 3,
+      "query_total_tokens": 0,
+      "adaptive_attempted": true,
+      "adaptive_applied": true,
+      "success": false,
+      "error": "quality_gate_failed:source_diversity_below_min",
+      "error_type": "quality_gate_failed",
+      "quality_passed": false,
+      "quality_checks_failed": [
+        "source_diversity_below_min"
+      ]
+    }
+  ],
+  "llm_metrics": {},
+  "ops_metrics": {
+    "active_sessions": 0,
+    "session_counts": {},
+    "recent_failures": [],
+    "llm_models": []
+  }
+}

@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Research Assistant Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --ink: #10212f;
+      --ink-soft: #4f6576;
+      --card: #ffffff;
+      --line: #d8e0e6;
+      --accent: #0f9d8f;
+      --accent-2: #f08a24;
+      --danger: #bf2f3f;
+      --ok: #1d7f4f;
+      --pending: #95a4b0;
+      --shadow: 0 8px 26px rgba(16, 33, 47, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 0% -20%, #d9f6f2 0%, transparent 60%),
+        radial-gradient(1200px 700px at 100% -20%, #ffe6cb 0%, transparent 60%),
+        var(--bg);
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .head {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(90deg, rgba(15,157,143,0.08), rgba(240,138,36,0.08));
+    }
+    .title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    .sub {
+      color: var(--ink-soft);
+      font-size: 12px;
+    }
+    .body { padding: 12px 14px; }
+    .mono { font-family: "IBM Plex Mono", monospace; }
+    textarea, input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 11px;
+      font-family: inherit;
+      color: var(--ink);
+      background: #fff;
+    }
+    textarea { min-height: 84px; resize: vertical; }
+    .row { display: grid; gap: 8px; margin-bottom: 10px; }
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .1s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: var(--accent); color: #fff; }
+    .btn.secondary { background: #e8f1f5; color: var(--ink); }
+    .btn.warn { background: #fbe9eb; color: var(--danger); }
+    .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .status {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #edf3f7;
+      color: var(--ink-soft);
+    }
+    .spinner {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: currentColor;
+      display: inline-block;
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    .status.busy .spinner {
+      animation: pulse 1s ease infinite;
+      opacity: 0.8;
+      transform: scale(1);
+    }
+    .status.ok { background: #e6f6ee; color: var(--ok); }
+    .status.fail { background: #fdecef; color: var(--danger); }
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.8); opacity: 0.5; }
+      50% { transform: scale(1.25); opacity: 1; }
+    }
+    .kvs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .kv { border: 1px solid var(--line); border-radius: 10px; padding: 8px; }
+    .kv .k { color: var(--ink-soft); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+    .kv .v { font-size: 14px; font-weight: 700; margin-top: 2px; }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fbfdff;
+      max-height: 420px;
+      overflow: auto;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 7px 6px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { color: var(--ink-soft); font-weight: 600; }
+    tr:hover td { background: #f8fbfd; }
+    .click { cursor: pointer; color: #0d5d95; text-decoration: underline; }
+    .stage-track {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 6px;
+      align-items: stretch;
+    }
+    .stage-pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 8px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--pending);
+      background: #fff;
+      transition: all 0.2s ease;
+    }
+    .stage-pill.active {
+      border-color: rgba(15,157,143,0.45);
+      background: rgba(15,157,143,0.12);
+      color: #0d7369;
+      transform: translateY(-1px);
+    }
+    .stage-pill.done {
+      border-color: #b5dfcf;
+      background: #e6f6ee;
+      color: var(--ok);
+    }
+    .report-shell {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fbfdff;
+    }
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--line);
+      background: #f2f7fa;
+    }
+    .tab {
+      border: 0;
+      background: transparent;
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      cursor: pointer;
+    }
+    .tab.active {
+      background: #fff;
+      color: var(--ink);
+    }
+    .panel {
+      display: none;
+      max-height: 420px;
+      overflow: auto;
+      padding: 10px;
+    }
+    .panel.show { display: block; }
+    .rendered {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #213342;
+    }
+    .rendered h1, .rendered h2, .rendered h3 { margin: 0.8rem 0 0.45rem 0; }
+    .rendered p { margin: 0.5rem 0; }
+    .rendered ul, .rendered ol { margin: 0.4rem 0 0.75rem 1.2rem; }
+    .rendered code {
+      background: #eff3f7;
+      border-radius: 4px;
+      padding: 0.1rem 0.25rem;
+      font-family: "IBM Plex Mono", monospace;
+    }
+    .rendered pre {
+      margin: 0.5rem 0;
+      background: #f6f8fa;
+      border: 1px solid #e2e9ef;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 12px;
+      max-height: none;
+    }
+    .rendered .citation {
+      color: #2f4f63;
+      font-size: 13px;
+      border-left: 3px solid #d5e4ef;
+      padding-left: 7px;
+    }
+    .rendered a {
+      color: #0a58ca;
+      text-decoration: underline;
+      cursor: pointer;
+      word-break: break-all;
+    }
+    .small {
+      font-size: 11px;
+      color: var(--ink-soft);
+    }
+    @media (max-width: 920px) {
+      .wrap { grid-template-columns: 1fr; }
+      .kvs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stage-track { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <div class="head">
+        <h2 class="title">Research Console</h2>
+        <span class="sub mono" id="sessionTag">session: none</span>
+      </div>
+      <div class="body">
+        <div class="row">
+          <label>Query</label>
+          <textarea id="queryInput">Impact of AI on education</textarea>
+        </div>
+        <div class="btns">
+          <button class="btn primary" id="startBtn">Start Research</button>
+          <button class="btn secondary" id="pollBtn">Refresh Status</button>
+          <button class="btn warn" id="cancelBtn">Cancel Session</button>
+        </div>
+        <div style="margin-top:10px">
+          <span class="status mono" id="statusPill"><span class="spinner"></span><span id="statusText">idle</span></span>
+        </div>
+        <div class="kvs">
+          <div class="kv"><div class="k">Stage</div><div class="v mono" id="stageVal">-</div></div>
+          <div class="kv"><div class="k">Sub-questions</div><div class="v mono" id="sqVal">-</div></div>
+          <div class="kv"><div class="k">Iteration</div><div class="v mono" id="iterVal">-</div></div>
+        </div>
+        <div class="stage-track" id="stageTrack">
+          <div class="stage-pill" data-stage="queued">Queued</div>
+          <div class="stage-pill" data-stage="planning">Planning</div>
+          <div class="stage-pill" data-stage="search">Search</div>
+          <div class="stage-pill" data-stage="analysis">Analysis</div>
+          <div class="stage-pill" data-stage="writing">Writing</div>
+          <div class="stage-pill" data-stage="completed">Done</div>
+        </div>
+        <div class="small mono" style="margin-top:8px" id="stageHint">Stage timeline updates as the run progresses.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="head">
+        <h2 class="title">Report Viewer</h2>
+        <span class="sub mono" id="reportMeta">latest</span>
+      </div>
+      <div class="body">
+        <div class="btns" style="margin-bottom:10px">
+          <select id="latestKindFilter" style="max-width:190px">
+            <option value="all">latest from: all</option>
+            <option value="file">latest from: file</option>
+            <option value="session">latest from: session</option>
+          </select>
+          <button class="btn secondary" id="loadLatestBtn">Load Latest</button>
+          <button class="btn secondary" id="exportHtmlBtn">Export HTML</button>
+          <button class="btn secondary" id="exportMdBtn">Export MD</button>
+          <button class="btn secondary" id="exportPdfBtn">Export PDF</button>
+        </div>
+        <div class="report-shell">
+          <div class="tabs">
+            <button class="tab active" id="tabRendered">Rendered</button>
+            <button class="tab" id="tabRaw">Raw</button>
+          </div>
+          <div class="panel rendered show" id="reportRendered">No report loaded yet.</div>
+          <div class="panel" id="reportRaw"><pre id="reportBox">No report loaded yet.</pre></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="head">
+        <h2 class="title">Reports</h2>
+        <span class="sub">Recent artifacts</span>
+      </div>
+      <div class="body">
+        <div class="btns" style="margin-bottom:10px">
+          <button class="btn secondary" id="refreshReportsBtn">Refresh</button>
+          <select id="kindFilter" style="max-width:140px">
+            <option value="all">all</option>
+            <option value="file">file</option>
+            <option value="session">session</option>
+          </select>
+        </div>
+        <div style="overflow:auto; max-height:290px">
+          <table>
+            <thead><tr><th>Ref</th><th>Kind</th><th>Chars</th><th>Updated</th></tr></thead>
+            <tbody id="reportsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="head">
+        <h2 class="title">Benchmarks</h2>
+        <span class="sub">History and deltas</span>
+      </div>
+      <div class="body">
+        <div class="btns" style="margin-bottom:10px">
+          <button class="btn secondary" id="refreshBenchBtn">Refresh</button>
+          <button class="btn secondary" id="compareBtn">Compare Latest 2</button>
+        </div>
+        <div style="overflow:auto; max-height:200px; margin-bottom:10px">
+          <table>
+            <thead><tr><th>Timestamp</th><th>OK</th><th>Fail</th><th>Avg s</th><th>Refs</th></tr></thead>
+            <tbody id="benchTbody"></tbody>
+          </table>
+        </div>
+        <pre id="compareBox">No comparison loaded.</pre>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const state = { sessionId: "", timer: null, latestRef: "latest", latestKind: "all" };
+    const el = (id) => document.getElementById(id);
+    const stageOrder = ["queued", "planning", "search", "analysis", "writing", "completed"];
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, opts);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`${res.status} ${text}`);
+      }
+      return res.json();
+    }
+
+    function setStatus(status) {
+      const p = el("statusPill");
+      p.className = "status mono";
+      const busy = ["queued", "running", "planning", "search", "analysis", "writing"].includes((status || "").toLowerCase());
+      if (busy) p.classList.add("busy");
+      if (status === "completed") p.classList.add("ok");
+      if (status === "failed" || status === "cancelled") p.classList.add("fail");
+      el("statusText").textContent = status || "unknown";
+    }
+
+    function toStageKey(rawStage, status) {
+      const s = (rawStage || status || "").toLowerCase();
+      if (!s) return "queued";
+      if (s.includes("queue")) return "queued";
+      if (s.includes("plan")) return "planning";
+      if (s.includes("search") || s.includes("retrieve")) return "search";
+      if (s.includes("analy")) return "analysis";
+      if (s.includes("writ") || s.includes("synth")) return "writing";
+      if (s === "completed") return "completed";
+      if (s === "failed" || s === "cancelled") return "completed";
+      return "queued";
+    }
+
+    function markStageTrack(stageKey) {
+      const idx = Math.max(0, stageOrder.indexOf(stageKey));
+      const pills = Array.from(el("stageTrack").querySelectorAll(".stage-pill"));
+      pills.forEach((pill) => {
+        const key = pill.getAttribute("data-stage");
+        const pos = stageOrder.indexOf(key);
+        pill.classList.remove("active", "done");
+        if (pos < idx) pill.classList.add("done");
+        if (pos === idx) pill.classList.add("active");
+      });
+    }
+
+    function applyProgress(data) {
+      const progress = data.progress || {};
+      setStatus(data.status || "unknown");
+      const displayStage = progress.stage || data.status || "-";
+      el("stageVal").textContent = displayStage;
+      const stageKey = toStageKey(progress.stage, data.status);
+      markStageTrack(stageKey);
+      el("stageHint").textContent = `Current stage: ${displayStage}`;
+      const done = progress.sub_questions_done;
+      const total = progress.sub_questions_total;
+      const subQ = Number.isInteger(done) && Number.isInteger(total) ? `${done}/${total}` : (Number.isInteger(done) ? `${done}` : "-");
+      el("sqVal").textContent = subQ;
+      el("iterVal").textContent = Number.isInteger(progress.iteration) ? String(progress.iteration) : "-";
+      if (state.sessionId) el("sessionTag").textContent = `session: ${state.sessionId}`;
+    }
+
+    async function pollStatus() {
+      if (!state.sessionId) return;
+      const s = await api(`/api/v1/research/${state.sessionId}/status`);
+      applyProgress(s);
+      if (["completed", "failed", "cancelled"].includes(s.status)) {
+        clearInterval(state.timer);
+        state.timer = null;
+        if (s.status === "completed") await loadReport(`session:${state.sessionId}`);
+      }
+    }
+
+    async function startResearch() {
+      const query = el("queryInput").value.trim();
+      if (!query) return;
+      const payload = await api("/api/v1/research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      state.sessionId = payload.session_id;
+      applyProgress({ status: "queued", progress: { stage: "queued" } });
+      if (state.timer) clearInterval(state.timer);
+      state.timer = setInterval(() => { pollStatus().catch(console.error); }, 1000);
+      pollStatus().catch(console.error);
+    }
+
+    async function cancelResearch() {
+      if (!state.sessionId) return;
+      await api(`/api/v1/research/${state.sessionId}/cancel`, { method: "POST" });
+      await pollStatus();
+    }
+
+    async function loadReport(ref = "latest") {
+      const selectedLatestKind = el("latestKindFilter").value || "all";
+      const kind = ref === "latest" ? selectedLatestKind : "all";
+      state.latestKind = kind;
+      const row = await api(`/api/v1/reports/content?ref=${encodeURIComponent(ref)}&kind=${encodeURIComponent(kind)}`);
+      state.latestRef = row.ref || ref;
+      el("reportMeta").textContent = `${row.ref || ref} · ${row.kind || ""} · latestKind=${state.latestKind}`;
+      const md = row.markdown || "(empty report)";
+      el("reportBox").textContent = md;
+      el("reportRendered").innerHTML = renderMarkdown(md);
+    }
+
+    async function exportLatestHtml() {
+      const selectedLatestKind = el("latestKindFilter").value || "all";
+      const exportRef = state.latestRef || "latest";
+      const exportKind = exportRef === "latest" ? selectedLatestKind : "all";
+      const row = await api(`/api/v1/reports/content?ref=${encodeURIComponent(exportRef)}&kind=${encodeURIComponent(exportKind)}`);
+      const content = row.markdown || "";
+      const rendered = renderMarkdown(content);
+      const htmlDoc = `<!doctype html><html><head><meta charset="utf-8"><title>Research Report</title>
+      <style>body{font-family:Segoe UI,Arial,sans-serif;max-width:980px;margin:2rem auto;padding:0 1rem;line-height:1.6}
+      h1,h2,h3{margin:.9rem 0 .5rem} p{margin:.5rem 0} ul,ol{margin:.4rem 0 .8rem 1.2rem} .citation{border-left:3px solid #d5e4ef;padding-left:7px;color:#2f4f63}
+      code{background:#eff3f7;border-radius:4px;padding:.1rem .25rem} pre{background:#f6f8fa;border:1px solid #e2e9ef;border-radius:8px;padding:10px;white-space:pre-wrap}
+      a{color:#0a58ca;text-decoration:underline;cursor:pointer;word-break:break-all}</style>
+      </head><body>${rendered}</body></html>`;
+      saveBlob(htmlDoc, "text/html", `report_${Date.now()}.html`);
+    }
+
+    async function exportLatestMd() {
+      const selectedLatestKind = el("latestKindFilter").value || "all";
+      const exportRef = state.latestRef || "latest";
+      const exportKind = exportRef === "latest" ? selectedLatestKind : "all";
+      const row = await api(`/api/v1/reports/content?ref=${encodeURIComponent(exportRef)}&kind=${encodeURIComponent(exportKind)}`);
+      saveBlob(row.markdown || "", "text/markdown", `report_${Date.now()}.md`);
+    }
+
+    async function exportLatestPdf() {
+      const selectedLatestKind = el("latestKindFilter").value || "all";
+      const exportRef = state.latestRef || "latest";
+      const exportKind = exportRef === "latest" ? selectedLatestKind : "all";
+      const row = await api(`/api/v1/reports/content?ref=${encodeURIComponent(exportRef)}&kind=${encodeURIComponent(exportKind)}`);
+      const rendered = renderMarkdown(row.markdown || "");
+      const htmlDoc = `<!doctype html><html><head><meta charset="utf-8"><title>Research Report</title>
+      <style>body{font-family:Segoe UI,Arial,sans-serif;max-width:980px;margin:1.2rem auto;padding:0 .8rem;line-height:1.55}
+      h1,h2,h3{margin:.9rem 0 .5rem} p{margin:.5rem 0} ul,ol{margin:.4rem 0 .8rem 1.2rem} .citation{border-left:3px solid #d5e4ef;padding-left:7px;color:#2f4f63}
+      code{background:#eff3f7;border-radius:4px;padding:.1rem .25rem} pre{background:#f6f8fa;border:1px solid #e2e9ef;border-radius:8px;padding:10px;white-space:pre-wrap}
+      a{color:#0a58ca;text-decoration:underline;cursor:pointer;word-break:break-all}</style>
+      </head><body>${rendered}<p style="margin-top:1.5rem;font-size:12px;color:#5a6f80">Use Print -> Save as PDF to export.</p></body></html>`;
+      const win = window.open("", "_blank");
+      if (!win) {
+        alert("Popup blocked. Allow popups to export PDF.");
+        return;
+      }
+      win.document.write(htmlDoc);
+      win.document.close();
+      setTimeout(() => win.print(), 250);
+    }
+
+    function saveBlob(content, mime, filename) {
+      const blob = new Blob([content], { type: mime });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function esc(v) {
+      return (v || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function inlineRender(text) {
+      let out = esc(text || "");
+      const placeholders = [];
+      out = out.replace(/\[([^\]]+)\]\(([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s)]+)\)/g, (_, label, url) => {
+        placeholders.push(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`);
+        return `@@LINK${placeholders.length - 1}@@`;
+      });
+      out = out.replace(/(^|[\s(])([a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s<)]+)(?=$|[\s).,;!])/g, (_, lead, url) => {
+        return `${lead}<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+      });
+      out = out.replace(/`([^`]+)`/g, "<code>$1</code>");
+      out = out.replace(/@@LINK(\d+)@@/g, (_, idx) => placeholders[Number(idx)] || "");
+      return out;
+    }
+
+    function renderMarkdown(md) {
+      const lines = (md || "").split("\n");
+      let html = "";
+      let inUl = false;
+      let inOl = false;
+      let inCode = false;
+      let pbuf = [];
+
+      const flushParagraph = () => {
+        if (pbuf.length) {
+          html += `<p>${inlineRender(pbuf.join(" "))}</p>`;
+          pbuf = [];
+        }
+      };
+      const closeLists = () => {
+        if (inUl) { html += "</ul>"; inUl = false; }
+        if (inOl) { html += "</ol>"; inOl = false; }
+      };
+
+      for (const rawLine of lines) {
+        const line = rawLine.replace(/\r$/, "");
+        const t = line.trim();
+        if (t.startsWith("```")) {
+          flushParagraph();
+          closeLists();
+          if (!inCode) {
+            inCode = true;
+            html += "<pre><code>";
+          } else {
+            inCode = false;
+            html += "</code></pre>";
+          }
+          continue;
+        }
+        if (inCode) {
+          html += `${esc(line)}\n`;
+          continue;
+        }
+        if (!t) {
+          flushParagraph();
+          closeLists();
+          continue;
+        }
+        const h = /^(#{1,6})\s+(.+)$/.exec(t);
+        if (h) {
+          flushParagraph();
+          closeLists();
+          const level = h[1].length;
+          html += `<h${level}>${inlineRender(h[2])}</h${level}>`;
+          continue;
+        }
+        const ul = /^[-*+]\s+(.+)$/.exec(t);
+        if (ul) {
+          flushParagraph();
+          if (inOl) { html += "</ol>"; inOl = false; }
+          if (!inUl) { html += "<ul>"; inUl = true; }
+          html += `<li>${inlineRender(ul[1])}</li>`;
+          continue;
+        }
+        const ol = /^\d+\.\s+(.+)$/.exec(t);
+        if (ol) {
+          flushParagraph();
+          if (inUl) { html += "</ul>"; inUl = false; }
+          if (!inOl) { html += "<ol>"; inOl = true; }
+          html += `<li>${inlineRender(ol[1])}</li>`;
+          continue;
+        }
+        if (/^\[\d+\]\s+/.test(t)) {
+          flushParagraph();
+          closeLists();
+          html += `<p class="citation">${inlineRender(t)}</p>`;
+          continue;
+        }
+        pbuf.push(t);
+      }
+      flushParagraph();
+      closeLists();
+      if (inCode) html += "</code></pre>";
+      return html || "<p>(empty report)</p>";
+    }
+
+    async function refreshReports() {
+      const kind = el("kindFilter").value || "all";
+      const payload = await api(`/api/v1/reports?limit=20&kind=${encodeURIComponent(kind)}`);
+      const body = el("reportsTbody");
+      body.innerHTML = "";
+      for (const r of payload.entries || []) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="click mono">${r.ref || ""}</td><td>${r.kind || ""}</td><td>${r.report_chars || 0}</td><td class="mono">${r.updated_at || ""}</td>`;
+        tr.querySelector(".click").addEventListener("click", () => loadReport(r.ref));
+        body.appendChild(tr);
+      }
+    }
+
+    async function refreshBenchmarks() {
+      const payload = await api("/api/v1/benchmarks/history?limit=10");
+      const body = el("benchTbody");
+      body.innerHTML = "";
+      for (const r of payload.entries || []) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td class="mono">${r.timestamp || ""}</td><td>${r.successes || 0}</td><td>${r.failures || 0}</td><td>${r.avg_latency_s || 0}</td><td>${r.avg_reference_count || 0}</td>`;
+        body.appendChild(tr);
+      }
+    }
+
+    async function compareLatest() {
+      const payload = await api("/api/v1/benchmarks/compare");
+      el("compareBox").textContent = JSON.stringify(payload.delta_b_minus_a || {}, null, 2);
+    }
+
+    function toggleTab(which) {
+      const tabRendered = el("tabRendered");
+      const tabRaw = el("tabRaw");
+      const panelRendered = el("reportRendered");
+      const panelRaw = el("reportRaw");
+      if (which === "rendered") {
+        tabRendered.classList.add("active");
+        tabRaw.classList.remove("active");
+        panelRendered.classList.add("show");
+        panelRaw.classList.remove("show");
+      } else {
+        tabRaw.classList.add("active");
+        tabRendered.classList.remove("active");
+        panelRaw.classList.add("show");
+        panelRendered.classList.remove("show");
+      }
+    }
+
+    el("startBtn").addEventListener("click", () => startResearch().catch(err => alert(err.message)));
+    el("pollBtn").addEventListener("click", () => pollStatus().catch(err => alert(err.message)));
+    el("cancelBtn").addEventListener("click", () => cancelResearch().catch(err => alert(err.message)));
+    el("loadLatestBtn").addEventListener("click", () => loadReport("latest").catch(err => alert(err.message)));
+    el("exportHtmlBtn").addEventListener("click", () => exportLatestHtml().catch(err => alert(err.message)));
+    el("exportMdBtn").addEventListener("click", () => exportLatestMd().catch(err => alert(err.message)));
+    el("exportPdfBtn").addEventListener("click", () => exportLatestPdf().catch(err => alert(err.message)));
+    el("refreshReportsBtn").addEventListener("click", () => refreshReports().catch(err => alert(err.message)));
+    el("kindFilter").addEventListener("change", () => refreshReports().catch(err => alert(err.message)));
+    el("latestKindFilter").addEventListener("change", () => loadReport("latest").catch(err => alert(err.message)));
+    el("refreshBenchBtn").addEventListener("click", () => refreshBenchmarks().catch(err => alert(err.message)));
+    el("compareBtn").addEventListener("click", () => compareLatest().catch(err => alert(err.message)));
+    el("tabRendered").addEventListener("click", () => toggleTab("rendered"));
+    el("tabRaw").addEventListener("click", () => toggleTab("raw"));
+
+    refreshReports().catch(console.error);
+    refreshBenchmarks().catch(console.error);
+    loadReport("latest").catch(console.error);
+    markStageTrack("queued");
+  </script>
+</body>
+</html>

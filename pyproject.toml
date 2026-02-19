@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "research-assistant"
+version = "0.1.0"
+description = "Research assistant with multi-step reasoning workflow"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "langgraph>=0.2.0",
+  "typer>=0.12.0",
+  "fastapi>=0.115.0",
+  "uvicorn>=0.30.0",
+  "pydantic-settings>=2.0.0",
+  "requests>=2.31.0",
+  "beautifulsoup4>=4.12.0",
+  "pypdf>=5.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+]
+
+[project.scripts]
+research-assistant = "research_assistant.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+research_assistant = ["web/*.html"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
