@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from typer.testing import CliRunner
 
@@ -351,7 +352,7 @@ def test_benchmark_compare_defaults_skip_synthetic(monkeypatch, tmp_path):
     payload = json.loads(result.stdout)
     assert not payload["file_a"].endswith("benchmark_20260101_000002.json")
     assert not payload["file_b"].endswith("benchmark_20260101_000002.json")
-    compared = {payload["file_a"].split("\\")[-1], payload["file_b"].split("\\")[-1]}
+    compared = {Path(payload["file_a"]).name, Path(payload["file_b"]).name}
     assert compared == {"benchmark_20260101_000000.json", "benchmark_20260101_000001.json"}
     delta = payload["delta_b_minus_a"]
     assert abs(delta["successes"]) == 1
