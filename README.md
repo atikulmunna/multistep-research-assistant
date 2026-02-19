@@ -4,6 +4,14 @@ Production-style, multi-provider research workflow built with LangGraph, FastAPI
 
 It plans a query, decomposes it, searches sources, analyzes evidence, synthesizes sections, enforces quality gates, and exports reports (`md`, `html`, `txt`, `pdf`) with benchmark + dashboard tooling.
 
+## Demo Walkthrough
+
+Full end-to-end dashboard demo (query -> live progress -> report -> PDF export):
+
+[![Watch the demo](https://img.youtube.com/vi/_H1j-SqfwVA/hqdefault.jpg)](https://youtu.be/_H1j-SqfwVA)
+
+[Watch on YouTube](https://youtu.be/_H1j-SqfwVA)
+
 ## Highlights
 
 - Multi-step graph workflow (`analyze -> plan -> gather -> analyze -> synthesize -> report`)
@@ -26,33 +34,88 @@ It plans a query, decomposes it, searches sources, analyzes evidence, synthesize
 
 ```mermaid
 flowchart TD
-  U[User: CLI / API / Dashboard] --> A[ResearchAssistant]
-  A --> G[LangGraph Workflow]
-  G --> N1[Analyze Query Node]
-  G --> N2[Plan Research Node]
-  G --> N3[Gather Information Node]
-  G --> N4[Analyze Content Node]
-  G --> N5[Synthesize Information Node]
-  G --> N6[Generate Report Node]
+  subgraph UX[Interfaces]
+    CLI[Typer CLI]
+    API[FastAPI Endpoints]
+    DASH[Web Dashboard]
+  end
 
-  N2 --> LLM1[LLM Service]
-  N4 --> LLM1
-  N5 --> LLM1
-  N6 --> LLM1
+  subgraph ORCH[Orchestration Layer]
+    RA[ResearchAssistant]
+    WF[LangGraph Workflow]
+    EDGE[Conditional Edges]
+  end
 
-  N3 --> S[Search Service]
-  S --> T[Tavily / SerpAPI / Mock]
-  N3 --> P[Document Parser]
-  P --> D[Text / PDF Content]
+  subgraph GRAPH[Research Graph Nodes]
+    N1[Analyze Query]
+    N2[Plan Research]
+    N3[Gather Information]
+    N4[Analyze Content]
+    N5[Synthesize Information]
+    N6[Generate Report]
+  end
 
-  N6 --> C[Citation Manager]
-  N6 --> F[Report Formatter]
-  F --> R[Markdown Report]
-  R --> X1[Export: md/html/txt/pdf]
+  subgraph SERVICES[Core Services]
+    LLM[LLM Service]
+    SEARCH[Search Service]
+    PARSER[Document Parser]
+    CITE[Citation Manager]
+    FMT[Report Formatter]
+  end
 
-  A --> DB[(SQLite Session Store)]
-  A --> M[Metrics + Ops]
-  M --> B[Benchmark History/Compare]
+  subgraph PROVIDERS[External Providers]
+    LLM_P[OpenAI / OpenRouter / Groq / xAI / Ollama / Mock]
+    S_P[Tavily / SerpAPI / Mock]
+  end
+
+  subgraph DATA[Persistence + Observability]
+    DB[(SQLite Session Store)]
+    MET[LLM + Ops Metrics]
+    BENCH[Benchmark History / Compare]
+  end
+
+  subgraph OUTPUTS[Outputs]
+    MD[Markdown Report]
+    EXP[Export: md / html / txt / pdf]
+  end
+
+  CLI --> RA
+  API --> RA
+  DASH --> API
+  RA --> WF
+  WF --> EDGE
+  EDGE --> N1 --> N2 --> N3 --> N4 --> N5 --> N6
+
+  N2 --> LLM
+  N4 --> LLM
+  N5 --> LLM
+  N6 --> LLM
+  LLM --> LLM_P
+
+  N3 --> SEARCH --> S_P
+  N3 --> PARSER
+  N6 --> CITE
+  N6 --> FMT
+  FMT --> MD --> EXP
+
+  RA --> DB
+  RA --> MET --> BENCH
+
+  classDef ui fill:#e7f5ff,stroke:#1c7ed6,stroke-width:1.5px,color:#0b3558;
+  classDef orch fill:#fff3bf,stroke:#f08c00,stroke-width:1.5px,color:#5c3d00;
+  classDef gnode fill:#e6fcf5,stroke:#099268,stroke-width:1.5px,color:#084c3a;
+  classDef svc fill:#f3f0ff,stroke:#5f3dc4,stroke-width:1.5px,color:#2e1a7a;
+  classDef provider fill:#ffe8cc,stroke:#d9480f,stroke-width:1.5px,color:#5f2b12;
+  classDef data fill:#fff0f6,stroke:#c2255c,stroke-width:1.5px,color:#6a1533;
+  classDef out fill:#f1f3f5,stroke:#495057,stroke-width:1.5px,color:#212529;
+
+  class CLI,API,DASH ui;
+  class RA,WF,EDGE orch;
+  class N1,N2,N3,N4,N5,N6 gnode;
+  class LLM,SEARCH,PARSER,CITE,FMT svc;
+  class LLM_P,S_P provider;
+  class DB,MET,BENCH data;
+  class MD,EXP out;
 ```
 
 ## Repository Layout
